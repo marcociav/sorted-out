@@ -1,6 +1,6 @@
 import React from 'react';
 import './SortingVisualizer.css';
-import { randomIntFromRange, isSorted } from './utils.js';
+import { sleep, randomIntFromRange, isSorted } from './utils.js';
 import { bogoSortStep } from './algos/bogosort.js'
 
 
@@ -11,9 +11,9 @@ export default class SortingVisualizer extends React.Component {
         this.state = {
             array: [],
             isSorted: false,
-            // highlighted: [],
+            highlighted: null,
             isSorting: false,
-            sortAnimationSpeedMS: 100
+            sortAnimationSpeedMS: 10000
         };
         this.sidebarWidth = 300;
         this.background = '#3d3f42';
@@ -30,7 +30,15 @@ export default class SortingVisualizer extends React.Component {
         for (let i= 0; i < 200; i++) {
             array.push(randomIntFromRange(12, 1320));
         }
-        this.setState({array: array, isSorted: false, /*highlighted: [],*/ isSorting: false});
+        this.setState(() => {return {array: array, isSorted: false, highlighted: null, isSorting: false}});
+    }
+
+    async startSort() {
+        this.setState(() => {return {isSorting: true}})
+    }
+    
+    async stopSort() {
+        this.setState(() => {return {isSorting: false}});
     }
 
     quickSort() {
@@ -49,28 +57,30 @@ export default class SortingVisualizer extends React.Component {
 
     }
 
-    bogoSort() {
-        this.setState({isSorting: true});
+    async bogoSort() {
+        console.log(this.state)
         if (isSorted(this.state.array) == true) {
-            console.log(this.state);
-            this.setState({isSorted: true, isSorting: false});
-            console.log(this.state);
+            this.setState(() => {return {isSorted: true, isSorting: false}});
         }
         else {
-            let step = bogoSortStep(this.state.array);
+            var array = this.state.array;
+            var step = bogoSortStep(array);
+            this.setState(() => {return {array: step.array, isSorted: step.sorted, highlited: step.highlighted}});
+            console.log(step);
+            console.log(this.state);
+            await sleep(this.sortAnimationSpeedMS);
             while (this.state.isSorted === false && this.state.isSorting === true) {
                 step = bogoSortStep(step.array);
                 console.log(step);
-                this.setState({array: step.array, isSorted: step.sorted /*, highlited: step.highlighted*/});
+                this.setState(() => {
+                    return {array: step.array, isSorted: step.sorted, highlited: step.highlighted}
+                });
+                await sleep(this.sortAnimationSpeedMS);
                 console.log(this.state);
             }
-            this.setState({isSorting: false, isSorted: true});
+            this.setState(() => {return {isSorting: false, isSorted: true}});
         }
         
-    }
-
-    stopSort() {
-        this.setState({isSorting: false});
     }
 
     render() {
@@ -101,7 +111,7 @@ export default class SortingVisualizer extends React.Component {
                         <br></br>
                         <button>BubbleSort [TODO]</button>
                         <br></br>
-                        <button onClick={() => this.bogoSort()}>BogoSort! [TODO]</button>
+                        <button onClick={() => {this.startSort(); this.bogoSort()}}>BogoSort! [TODO]</button>
                         <br></br>
                         <br></br>
                         {stopSortingButton}

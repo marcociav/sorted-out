@@ -1,3 +1,5 @@
+export const sleep = ms => new Promise(r => setTimeout(r, ms));
+
 export function randomIntFromRange(min, max) {
     // min included, max excluded
     return Math.floor(Math.random() * (max - min) + min);
@@ -8,16 +10,17 @@ export function shuffle(array) {
   
     // While there remain elements to shuffle
     while (n) {
-  
-      // Pick a remaining element
-      i = Math.floor(Math.random() * n--);
-  
-      // Swap it with the current element
-      tmp = array[n];
-      array[n] = array[i];
-      array[i] = tmp;
+
+        // Pick a remaining element
+        i = Math.floor(Math.random() * n--);
+
+        // Swap it with the current element
+        tmp = array[n];
+        array[n] = array[i];
+        array[i] = tmp;
     }
-  
+    console.log("within shuffle: shuffled array")
+    console.log(array)
     return array;
   }
 
