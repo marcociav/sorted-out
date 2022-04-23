@@ -1,0 +1,27 @@
+.container {
+    height: 100%;
+    position: relative;
+}
+
+.container .sidebar-container {
+    position: absolute;
+    background-color: rgb(87, 82, 82);
+    height: 100%;
+    font: 'poppins';
+    text-align: center;
+    color: aliceblue;
+    box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.1)
+}
+
+.container .array-container {
+    position: absolute;
+    padding-top: 75px;
+}
+
+.container .array-container .array-bar {
+    height: 3px;
+    background-color: burlywood;
+    display: block;
+    margin-top: 0px;
+    margin-bottom: 1px;
+}
