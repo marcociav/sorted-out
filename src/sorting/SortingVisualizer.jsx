@@ -2,6 +2,7 @@ import React from 'react';
 import './SortingVisualizer.css';
 import { sleep, randomIntFromRange, isSorted } from './utils.js';
 import { bogoSortStep } from './algos/bogosort.js'
+import { partitionStep, Stack } from './algos/quicksort.js'
 
 
 export default class SortingVisualizer extends React.Component {
@@ -13,7 +14,8 @@ export default class SortingVisualizer extends React.Component {
             isSorted: false,
             highlighted: null,
             isSorting: false,
-            sortAnimationSpeedMS: 50
+            arrayLength: 200,
+            sortAnimationSpeedMS: 500
         };
         this.sidebarWidth = 300;
         this.background = '#3d3f42';
@@ -27,7 +29,7 @@ export default class SortingVisualizer extends React.Component {
 
     setRandomArray() {
         const array = [];
-        for (let i= 0; i < 200; i++) {
+        for (let i= 0; i < this.state.arrayLength; i++) {
             array.push(randomIntFromRange(12, 1320));
         }
         this.setState(() => {return {array: array, isSorted: false, highlighted: null, isSorting: false}});
@@ -41,8 +43,57 @@ export default class SortingVisualizer extends React.Component {
         this.setState(() => {return {isSorting: false, highlighted: null}});
     }
 
-    quickSort() {
+    // iterative implementation to keep track of indexes in whole array
+    async quickSort() {
+        var left = 0, right = this.state.array.length - 1;
+        let stack = new Stack(right - left + 1);
+        stack.push(left);
+        stack.push(right);
 
+        var pivot;
+
+        var array = this.state.array;
+        var step;
+
+        while (stack.top >= 0 && this.state.isSorting === true) {
+            right = stack.pop();
+            left = stack.pop();
+
+            // partition phase
+            pivot = Math.floor((left + right) / 2);
+            let i = left,
+                j = right;
+
+            // first partition step to initialize step variable
+            if (i <= j && this.state.isSorting === true) {
+                step = partitionStep(array, pivot, i, j);
+                this.setState(() => {return {array: step.array, highlighted: step.pivot}});
+                i = step.i;
+                j = step.j;
+            }
+            // iterate partition step
+            while (i <= j && this.state.isSorting === true) {
+                step = partitionStep(step.array, pivot, i, j);
+                this.setState(() => {return {array: step.array, highlighted: step.pivot}});
+                i = step.i;
+                j = step.j;
+            }
+
+            if (left < i - 1) {
+                stack.push(left);
+                stack.push(i - 1);
+            }
+
+            if (right > i) {
+                stack.push(i);
+                stack.push(right);
+            }
+
+        }
+        if (stack.top === -1) {
+            this.setState(() => {return {isSorted: true}});
+        }
+        this.setState(() => {return {isSorting: false}});
     }
 
     mergeSort() {
@@ -58,7 +109,7 @@ export default class SortingVisualizer extends React.Component {
     }
 
     async bogoSort() {
-        if (isSorted(this.state.array) == true) {
+        if (isSorted(this.state.array) === true) {
             this.setState(() => {return {isSorted: true, isSorting: false}});
         }
         else {
@@ -98,7 +149,7 @@ export default class SortingVisualizer extends React.Component {
                         <button onClick={() => this.setRandomArray()}>Reset Array</button>
                         <br></br>
                         <br></br>
-                        <button>QuickSort [TODO]</button>
+                        <button onClick={() => {this.startSort(); this.quickSort()}}>QuickSort [TOTEST]</button>
                         <br></br>
                         <button>MergeSort [TODO]</button>
                         <br></br>
@@ -127,7 +178,7 @@ export default class SortingVisualizer extends React.Component {
                                             width: `${value}px`,
                                             backgroundColor: 
                                                 this.state.isSorted === true ? '#42f54e' :  // green
-                                                (i == this.state.highlighted ? 'red': 'burlywood')
+                                                (i === this.state.highlighted ? 'red': 'burlywood')
                                         }}
                                     >
                                     </div>

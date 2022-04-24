@@ -5,8 +5,14 @@ export function randomIntFromRange(min, max) {
     return Math.floor(Math.random() * (max - min) + min);
 }
 
+export function swap(items, i, j){
+    var tmp = items[i];
+    items[i] = items[j];
+    items[j] = tmp;
+}
+
 export function shuffle(array) {
-    var n = array.length, tmp, i;
+    var n = array.length, i;
   
     // While there remain elements to shuffle
     while (n) {
@@ -15,9 +21,7 @@ export function shuffle(array) {
         i = Math.floor(Math.random() * n--);
 
         // Swap it with the current element
-        tmp = array[n];
-        array[n] = array[i];
-        array[i] = tmp;
+        swap(array, n, i);
     }
     return array;
   }
