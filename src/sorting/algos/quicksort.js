@@ -19,10 +19,10 @@ export class Stack {
 
 
 export function partitionStep(array, pivot, i, j) {
-    while (array[i] < pivot) {
+    while (array[i] < array[pivot]) {
         i++;
     }
-    while (array[j] > pivot) {
+    while (array[j] > array[pivot]) {
         j--;
     }
     if (i <= j) {
@@ -40,7 +40,7 @@ export function partitionStep(array, pivot, i, j) {
 
 
 function partition(array, left, right) {
-    var pivot = array[Math.floor((right + left) / 2)],
+    var pivot = left,
         i = left,
         j = right,
         step;
@@ -72,7 +72,7 @@ function quickSort(items, left, right) {
 
 
 function partitionNatural(items, left, right) {
-    var pivot = items[Math.floor((right + left) / 2)],
+    var pivot = items[left],
         i = left,
         j = right;
 
