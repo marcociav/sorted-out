@@ -1,8 +1,7 @@
 import React from 'react';
 import './SortingVisualizer.css';
-import { sleep, randomIntFromRange, isSorted, swap} from './utils.js';
+import { sleep, randomIntFromRange, isSorted, swap, Stack} from './utils.js';
 import { bogoSortStep } from './algos/bogosort.js';
-import { Stack } from './algos/quicksort.js';
 
 
 export default class SortingVisualizer extends React.Component {
@@ -12,10 +11,11 @@ export default class SortingVisualizer extends React.Component {
         this.state = {
             array: [],
             isSorted: false,
-            highlighted: null,
+            highlighted1: null,
+            highlighted2: null,
             isSorting: false,
             arrayLength: 200,
-            sortAnimationSpeedMS: 20
+            sortAnimationSpeedMS: 25
         };
         this.sidebarWidth = 300;
         this.background = '#3d3f42';
@@ -32,7 +32,9 @@ export default class SortingVisualizer extends React.Component {
         for (let i = 0; i < this.state.arrayLength; i++) {
             array.push(randomIntFromRange(12, 1320));
         }
-        this.setState(() => {return {array: array, isSorted: false, highlighted: null, isSorting: false}});
+        this.setState(() => {return {
+            array: array, isSorted: false, highlighted1: null, highlighted2: null, isSorting: false
+        }});
     }
 
     async startSort() {
@@ -40,11 +42,19 @@ export default class SortingVisualizer extends React.Component {
     }
     
     async stopSort() {
-        this.setState(() => {return {isSorting: false, highlighted: null}});
+        this.setState(() => {return {
+            isSorting: false, highlighted1: null, highlighted2: null
+        }});
     }
 
-    async highlight(value) {
-        this.setState(() => {return {highlighted: value}});
+    async highlight(key, value) {
+        if (key === 1) {
+            this.setState(() => {return {highlighted1: value}});
+        }
+        else if (key === 2) {
+            this.setState(() => {return {highlighted2: value}});
+        }
+        
     }
 
     // iterative implementation to keep track of indexes in whole array
@@ -69,7 +79,8 @@ export default class SortingVisualizer extends React.Component {
 
                 // Hoare's partition
                 pivot = left;
-                await this.highlight(pivot);
+                await this.highlight(1, pivot);
+                await this.highlight(2, right);
                 i = left;
                 j = right;
                 while (i <= j && this.state.isSorting === true) {
@@ -126,19 +137,18 @@ export default class SortingVisualizer extends React.Component {
         }
         else {
             var step = bogoSortStep(this.state.array);
-            this.setState(() => {return {array: step.array, isSorted: step.sorted, highlighted: step.highlighted}});
+            this.setState(() => {return {array: step.array, isSorted: step.sorted, highlighted1: step.highlighted}});
             await sleep(this.state.sortAnimationSpeedMS);
 
             while (this.state.isSorted === false && this.state.isSorting === true) {
                 step = bogoSortStep(step.array);
                 this.setState(() => {
-                    return {array: step.array, isSorted: step.sorted, highlighted: step.highlighted}
+                    return {array: step.array, isSorted: step.sorted, highlighted1: step.highlighted}
                 });
                 await sleep(this.state.sortAnimationSpeedMS);
             }
             this.setState(() => {return {isSorting: false}});
         }
-        
     }
 
     render() {
@@ -188,8 +198,9 @@ export default class SortingVisualizer extends React.Component {
                                         style={{
                                             width: `${value}px`,
                                             backgroundColor: 
-                                                this.state.isSorted === true ? '#42f54e' :  // green
-                                                (i === this.state.highlighted ? 'red': 'burlywood')
+                                                (this.state.isSorted === true ? '#87Deb8' :  // green
+                                                (i === this.state.highlighted1 ? '#DC143C': // red
+                                                (i === this.state.highlighted2 ? ' #87adde' /* blue */ : 'burlywood')))
                                         }}
                                     >
                                     </div>

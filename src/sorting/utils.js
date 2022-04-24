@@ -12,10 +12,11 @@ export function swap(items, i, j){
 }
 
 export function shuffle(array) {
-    var n = array.length, i;
+    var n = array.length;
+    var i;
   
     // While there remain elements to shuffle
-    while (n) {
+    while (n > 0) {
 
         // Pick a remaining element
         i = Math.floor(Math.random() * n--);
@@ -34,4 +35,20 @@ export function isSorted(array) {
         }
     }
     return true;
+}
+
+export class Stack {
+    constructor(dim) {
+        this.items = new Array(dim);
+        this.items.fill(0);
+        this.top = -1;
+    }
+
+    push(value) {
+        this.items[++this.top] = value;
+    }
+
+    pop() {
+        return this.items[this.top--];
+    }
 }

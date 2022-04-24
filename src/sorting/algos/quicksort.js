@@ -1,23 +1,6 @@
 import { swap } from '../utils.js'
 
 
-export class Stack {
-    constructor(dim) {
-        this.items = new Array(dim);
-        this.items.fill(0);
-        this.top = -1;
-    }
-
-    push(value) {
-        this.items[++this.top] = value;
-    }
-
-    pop() {
-        return this.items[this.top--];
-    }
-}
-
-
 export function partitionStep(array, pivot, i, j) {
     while (array[i] < array[pivot]) {
         i++;
