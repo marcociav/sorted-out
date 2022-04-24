@@ -19,8 +19,6 @@ export function shuffle(array) {
         array[n] = array[i];
         array[i] = tmp;
     }
-    console.log("within shuffle: shuffled array")
-    console.log(array)
     return array;
   }
 
