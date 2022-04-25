@@ -1,6 +1,6 @@
 import React from 'react';
 import './SortingVisualizer.css';
-import { sleep, randomIntFromRange, isSorted, swap, Stack} from './utils.js';
+import { sleep, randomIntFromRange, isSorted, Stack} from './utils.js';
 import { bogoSortStep } from './algos/bogosort.js';
 
 
@@ -122,13 +122,12 @@ export default class SortingVisualizer extends React.Component {
                         tmp = array[i];
                         array[i] = array[j];
                         await this.setArray(array);
-                        await sleep(this.state.sortAnimationSpeedMS);
                         array[j] = tmp;
                         await this.setArray(array);
-                        await sleep(this.state.sortAnimationSpeedMS);
                         i++;
                         j--;
                     }
+                    await sleep(this.state.sortAnimationSpeedMS);
                 }
 
                 // are there elements on the left of the pivot? if so partition them
@@ -142,6 +141,7 @@ export default class SortingVisualizer extends React.Component {
                     stack.push(i);
                     stack.push(right);
                 }
+                await sleep(this.state.sortAnimationSpeedMS);
             }
             if (this.state.isSorting === true) {
                 this.setState(() => {return {isSorted: true}});
@@ -237,7 +237,9 @@ export default class SortingVisualizer extends React.Component {
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
                     /* end merge */
+                    await sleep(this.state.sortAnimationSpeedMS);
                 }
+                await sleep(this.state.sortAnimationSpeedMS);
             }
         }
         if (this.state.isSorting === true) {
@@ -250,8 +252,40 @@ export default class SortingVisualizer extends React.Component {
 
     }
 
-    bubbleSort() {
-
+    async bubbleSort() {
+        await this.startSort();
+        var n = this.state.array.length;
+        if (n <= 1) {
+            this.setState(() => {return {isSorted: true, isSorting: false}});
+        }
+        else {
+            var array = this.state.array;
+            var j, i = 0;
+            var tmp;
+            while (i < n && this.state.isSorting === true) {
+                j = 0;
+                await this.highlight(1, j);
+                while (j < n - i - 1 && this.state.isSorting === true) {
+                    await this.highlight(1, j + 1);
+                    if (array[j] > array[j + 1]) {
+                        tmp = array[j + 1];
+                        array[j + 1] = array[j];
+                        await this.setArray(array);
+                        array[j] = tmp;
+                        await this.setArray(array);
+                    }
+                    j++;
+                    await sleep(this.state.sortAnimationSpeedMS);
+                }
+                i++;
+                await this.highlight(2, n - i);
+                await sleep(this.state.sortAnimationSpeedMS);
+            }
+            if (this.state.isSorting === true) {
+                this.setState(() => {return {isSorted: true}});
+            }
+            this.setState(() => {return {isSorting: false}});
+        }
     }
 
     async bogoSort() {
@@ -300,7 +334,7 @@ export default class SortingVisualizer extends React.Component {
                         <br></br>
                         <button>HeapSort [TODO]</button>
                         <br></br>
-                        <button>BubbleSort [TODO]</button>
+                        <button onClick={() => this.bubbleSort()}>BubbleSort</button>
                         <br></br>
                         <button onClick={() => this.bogoSort()}>BogoSort!</button>
                         <br></br>
