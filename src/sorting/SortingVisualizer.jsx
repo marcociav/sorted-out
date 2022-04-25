@@ -15,10 +15,14 @@ export default class SortingVisualizer extends React.Component {
             highlighted2: null,
             isSorting: false,
             arrayLength: 200,
+            tmpArrayLength: 200,
             sortAnimationSpeedMS: 15
         };
         this.sidebarWidth = 300;
         this.background = '#3d3f42';
+
+        this.handleArrayLengthChange = this.handleArrayLengthChange.bind(this);
+        this.handleArrayLengthSubmit = this.handleArrayLengthSubmit.bind(this)
         
     }
 
@@ -27,7 +31,7 @@ export default class SortingVisualizer extends React.Component {
         document.body.style.background = this.background;
     }
 
-    setRandomArray() {
+    async setRandomArray() {
         const array = [];
         for (let i = 0; i < this.state.arrayLength; i++) {
             array.push(randomIntFromRange(12, 1320));
@@ -61,6 +65,21 @@ export default class SortingVisualizer extends React.Component {
             this.setState(() => {return {highlighted2: value}});
         }
         
+    }
+
+    async setArrayLength(length) {
+        this.setState(() => {return {arrayLength: length}});
+    }
+
+    handleArrayLengthChange(event) {
+        this.setState(() => {return {tmpArrayLength: parseInt(event.target.value)}});
+    }
+
+    async handleArrayLengthSubmit(event) {
+        await this.stopSort();
+        await this.setArrayLength(this.state.tmpArrayLength);
+        await this.setRandomArray();
+        event.preventDefault();
     }
 
     // iterative implementation to keep track of indexes in whole array
@@ -288,6 +307,19 @@ export default class SortingVisualizer extends React.Component {
                         <br></br>
                         {stopSortingButton}
                     </ul>
+                </div>
+
+                <div>
+                    <form onSubmit={this.handleArrayLengthSubmit}>
+                        <label>
+                            Elements
+                            <input 
+                                type="number" min="1" max="200"
+                                value={this.state.tmpArrayLength} onChange={this.handleArrayLengthChange} 
+                            />
+                        </label>
+                        <input type="submit" value="Submit" />
+                    </form>
                 </div>
                 
                 <div 
