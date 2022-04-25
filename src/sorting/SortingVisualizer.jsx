@@ -47,6 +47,10 @@ export default class SortingVisualizer extends React.Component {
         }});
     }
 
+    async setArray(array) {
+        this.setState(() => {return {array: array}});
+    }
+
     async highlight(key, value) {
         if (key === 1) {
             this.setState(() => {return {highlighted1: value}});
@@ -69,9 +73,9 @@ export default class SortingVisualizer extends React.Component {
             stack.push(left);
             stack.push(right);
 
-            var pivot;
             var array = this.state.array;
-            var i, j;
+            var i, j, pivot;
+            var tmp;
 
             while (stack.top >= 0 && this.state.isSorting === true) {
                 right = stack.pop();
@@ -91,11 +95,16 @@ export default class SortingVisualizer extends React.Component {
                         j--;
                     }
                     if (i <= j) {
-                        swap(array, i, j);
+                        // swap
+                        tmp = array[i];
+                        array[i] = array[j];
+                        await this.setArray(array);
+                        await sleep(this.state.sortAnimationSpeedMS);
+                        array[j] = tmp;
+                        await this.setArray(array);
+                        await sleep(this.state.sortAnimationSpeedMS);
                         i++;
                         j--;
-                        this.setState(() => {return {array: array}});
-                        await sleep(this.state.sortAnimationSpeedMS);
                     }
                 }
 
@@ -118,8 +127,84 @@ export default class SortingVisualizer extends React.Component {
         }   
     }
 
-    mergeSort() {
+    async mergeSort() {
+        await this.startSort();
+        var n = this.state.array.length;
 
+        if (n <= 1) {
+            this.setState({isSorted: true, isSorting: false});
+        }
+        else {
+
+            var curr_size, mid;
+            var left, right;
+
+            var array = this.state.array;
+
+            for (curr_size = 1; curr_size <= n - 1; curr_size *= 2) {
+                for (left = 0; left < n - 1; left += 2 * curr_size) {
+                    mid = Math.min(left + curr_size - 1, n - 1);
+                    right = Math.min(left + 2 * curr_size - 1, n - 1);
+                    await this.highlight(1, left);
+                    await this.highlight(2, right);
+
+                    /* merge */
+                    var i, j, k;
+                    var n_l = mid - left + 1;
+                    var n_r = right - mid;
+                    var L = Array(n_l).fill(0);
+                    var R = Array(n_r).fill(0);
+
+                    // create temp left and right arrays
+                    for (i = 0; i < n_l; i++) {
+                        L[i] = array[left + i];
+                    }
+                    for (j = 0; j < n_r; j++) {
+                        R[j] = array[mid + 1 + j];
+                    }
+
+                    i = 0;
+                    j = 0;
+                    k = left;
+                    
+                    // compare left and right array elements one by one
+                    // set array = smallest val of comparison
+                    // then increment temp array omd for array with smallest val found
+                    while (i < n_l && j < n_r && this.state.isSorting) {
+                        if (L[i] <= R[j]) {
+                            array[k] = L[i];
+                            i++;
+                        }
+                        else {
+                            array[k] = R[j];
+                            j++;
+                        }                        
+                        await this.setArray(array);
+                        await sleep(this.state.sortAnimationSpeedMS);
+                        k++;
+                    }
+
+                    // if there are any remaining elements in temp arrays after comparison phase
+                    // add them to back of array
+                    while (i < n_l && this.state.isSorting) {
+                        array[k] = L[i];
+                        i++;
+                        k++;
+                        await this.setArray(array);
+                        await sleep(this.state.sortAnimationSpeedMS);
+                    }
+                    while (j < n_r && this.state.isSorting) {
+                        array[k] = R[j];
+                        j++;
+                        k++;
+                        await this.setArray(array);
+                         await sleep(this.state.sortAnimationSpeedMS);
+                    }
+                    /* end merge */
+                }
+            }
+        }
+        this.setState(() => {return {isSorted: true, isSorting: false}});
     }
 
     heapSort() {
@@ -170,9 +255,9 @@ export default class SortingVisualizer extends React.Component {
                         <button onClick={() => this.setRandomArray()}>Reset Array</button>
                         <br></br>
                         <br></br>
-                        <button onClick={() => {this.startSort(); this.quickSort()}}>QuickSort</button>
+                        <button onClick={() => this.quickSort()}>QuickSort</button>
                         <br></br>
-                        <button>MergeSort [TODO]</button>
+                        <button onClick={() => this.mergeSort()}>MergeSort [TOTEST]</button>
                         <br></br>
                         <button>HeapSort [TODO]</button>
                         <br></br>
