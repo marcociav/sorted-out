@@ -38,7 +38,9 @@ export default class SortingVisualizer extends React.Component {
     }
 
     async startSort() {
-        this.setState(() => {return {isSorting: true, isSorted: false}});
+        this.setState(() => {return {
+            isSorting: true, isSorted: false, highlighted1: null, highlighted2: null
+        }});
     }
     
     async stopSort() {
@@ -125,7 +127,7 @@ export default class SortingVisualizer extends React.Component {
             if (this.state.isSorting === true) {
                 this.setState(() => {return {isSorted: true}});
             }
-            this.setState(() => {return {isSorting: false}});
+            this.setState(() => {return {isSorting: false, highlighted1: null, highlighted2: null}});
         }   
     }
 
@@ -222,7 +224,7 @@ export default class SortingVisualizer extends React.Component {
         if (this.state.isSorting === true) {
             this.setState(() => {return {isSorted: true}});
         }
-        this.setState(() => {return {isSorting: false}});
+        this.setState(() => {return {isSorting: false, highlighted1: null, highlighted2: null}});
     }
 
     heapSort() {
