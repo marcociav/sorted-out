@@ -15,7 +15,7 @@ export default class SortingVisualizer extends React.Component {
             highlighted2: null,
             isSorting: false,
             arrayLength: 200,
-            sortAnimationSpeedMS: 25
+            sortAnimationSpeedMS: 15
         };
         this.sidebarWidth = 300;
         this.background = '#3d3f42';
@@ -90,9 +90,11 @@ export default class SortingVisualizer extends React.Component {
                 while (i <= j && this.state.isSorting === true) {
                     while (array[i] < array[pivot]) {
                         i++;
+                        await sleep(this.state.sortAnimationSpeedMS);
                     }
                     while (array[j] > array[pivot]) {
                         j--;
+                        await sleep(this.state.sortAnimationSpeedMS);
                     }
                     if (i <= j) {
                         // swap
@@ -120,7 +122,7 @@ export default class SortingVisualizer extends React.Component {
                     stack.push(right);
                 }
             }
-            if (stack.top === -1) {
+            if (this.state.isSorting === true) {
                 this.setState(() => {return {isSorted: true}});
             }
             this.setState(() => {return {isSorting: false}});
@@ -156,11 +158,24 @@ export default class SortingVisualizer extends React.Component {
                     var R = Array(n_r).fill(0);
 
                     // create temp left and right arrays
-                    for (i = 0; i < n_l; i++) {
+                    i = 0;
+                    j = 0;
+                    while (i < n_l && j < n_r && this.state.isSorting) {
                         L[i] = array[left + i];
-                    }
-                    for (j = 0; j < n_r; j++) {
                         R[j] = array[mid + 1 + j];
+                        i++;
+                        j++;
+                        await sleep(this.state.sortAnimationSpeedMS);
+                    }
+                    while (i < n_l && this.state.isSorting) {
+                        L[i] = array[left + i];
+                        i++;
+                        await sleep(this.state.sortAnimationSpeedMS);
+                    }
+                    while(j < n_r && this.state.isSorting) {
+                        R[j] = array[mid + 1 + j];
+                        j++;
+                        await sleep(this.state.sortAnimationSpeedMS);
                     }
 
                     i = 0;
@@ -169,7 +184,7 @@ export default class SortingVisualizer extends React.Component {
                     
                     // compare left and right array elements one by one
                     // set array = smallest val of comparison
-                    // then increment temp array omd for array with smallest val found
+                    // then increment temp array ind for array with smallest val found
                     while (i < n_l && j < n_r && this.state.isSorting) {
                         if (L[i] <= R[j]) {
                             array[k] = L[i];
@@ -198,13 +213,16 @@ export default class SortingVisualizer extends React.Component {
                         j++;
                         k++;
                         await this.setArray(array);
-                         await sleep(this.state.sortAnimationSpeedMS);
+                        await sleep(this.state.sortAnimationSpeedMS);
                     }
                     /* end merge */
                 }
             }
         }
-        this.setState(() => {return {isSorted: true, isSorting: false}});
+        if (this.state.isSorting === true) {
+            this.setState(() => {return {isSorted: true}});
+        }
+        this.setState(() => {return {isSorting: false}});
     }
 
     heapSort() {
@@ -257,7 +275,7 @@ export default class SortingVisualizer extends React.Component {
                         <br></br>
                         <button onClick={() => this.quickSort()}>QuickSort</button>
                         <br></br>
-                        <button onClick={() => this.mergeSort()}>MergeSort [TOTEST]</button>
+                        <button onClick={() => this.mergeSort()}>MergeSort</button>
                         <br></br>
                         <button>HeapSort [TODO]</button>
                         <br></br>
