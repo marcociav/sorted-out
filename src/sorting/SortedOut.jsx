@@ -1,6 +1,6 @@
 import React from 'react';
 import './SortedOut.css';
-import { sleep, randomIntFromRange, isSorted, Stack} from './utils.js';
+import { sleep, randomIntFromRange, isSorted, Stack } from './utils.js';
 import { bogoSortStep } from './algos/bogosort.js';
 
 
@@ -18,21 +18,38 @@ export default class SortedOut extends React.Component {
                 "c4": null
             },
             isSorting: false,
-            arrayLength: 200,
-            tmpArrayLength: 200,
-            sortAnimationSpeedMS: 10
+            arrayLength: 128,
+            tmpArrayLength: 128,
+            maxArrayLength: 256,
+            minArrayLength: 1,
+            barWidth: null,
+            barFirstPos: null,
+            sortAnimationSpeedMS: 15,
+            minSortAnimationSpeedMS: 15,
+            maxSortAnimationSpeedMS: 1000
         };
         this.sidebarWidth = 300;
         this.background = '#3d3f42';
+        this.font = 'poppins';
+        this.color = 'aliceblue';
 
         this.handleArrayLengthChange = this.handleArrayLengthChange.bind(this);
-        this.handleArrayLengthSubmit = this.handleArrayLengthSubmit.bind(this)
+        this.handleArrayLengthSubmit = this.handleArrayLengthSubmit.bind(this);
+        this.handleSortAnimationSpeedMSChange = this.handleSortAnimationSpeedMSChange.bind(this);
         
     }
 
     componentDidMount() {
         this.setRandomArray();
         document.body.style.background = this.background;
+        document.body.style.font = this.font;
+        document.body.style.color = this.color;
+    }
+
+    async calculateBarParameters() {
+        var w = Math.floor(800 / this.state.arrayLength) - 1;
+        var x0 = (800 % this.state.arrayLength) / 2
+        this.setState(() => {return {barWidth: w, barFirstPos: x0}});
     }
 
     async setRandomArray() {
@@ -40,6 +57,7 @@ export default class SortedOut extends React.Component {
         for (let i = 0; i < this.state.arrayLength; i++) {
             array.push(randomIntFromRange(12, 1320));
         }
+        await this.calculateBarParameters();
         await this.unHighlightAll();
         this.setState(() => {return {array: array, isSorted: false, isSorting: false}});
     }
@@ -83,6 +101,15 @@ export default class SortedOut extends React.Component {
         await this.stopSort();
         await this.setArrayLength(this.state.tmpArrayLength);
         await this.setRandomArray();
+        event.preventDefault();
+    }
+
+    async setSortAnimationSpeedMS(speed) {
+        this.setState(() => {return {sortAnimationSpeedMS: speed}});
+    }
+
+    handleSortAnimationSpeedMSChange(event) {
+        this.setSortAnimationSpeedMS(parseInt(event.target.value));
         event.preventDefault();
     }
 
@@ -141,13 +168,13 @@ export default class SortedOut extends React.Component {
                     await sleep(this.state.sortAnimationSpeedMS);
                 }
 
-                // are there elements on the left of the pivot? if so partition them
+                // are there elements on the left of the new pivot? if so partition them
                 if (left < i - 1) {
                     stack.push(left);
                     stack.push(i - 1);
                 }
                 
-                // are there elements on the right of the pivot? if so partition them
+                // are there elements on the right of the new pivot? if so partition them
                 if (right > i) {
                     stack.push(i);
                     stack.push(right);
@@ -362,17 +389,36 @@ export default class SortedOut extends React.Component {
                     </ul>
                 </div>
 
-                <div>
-                    <form onSubmit={this.handleArrayLengthSubmit}>
-                        <label>
-                            Elements
-                            <input 
-                                type="number" min="1" max="200"
-                                value={this.state.tmpArrayLength} onChange={this.handleArrayLengthChange} 
-                            />
-                        </label>
-                        <input type="submit" value="Submit" />
-                    </form>
+                <div className="topbar-container">
+                    <ul>
+                        <li>
+                            <form onSubmit={this.handleArrayLengthSubmit}>
+                                <label>
+                                    Elements
+                                    <input 
+                                        type="number" 
+                                        min={this.state.minArrayLength} 
+                                        max={this.state.maxArrayLength}
+                                        value={this.state.tmpArrayLength} 
+                                        onChange={this.handleArrayLengthChange} 
+                                    />
+                                </label>
+                                <input type="submit" value="Submit" />
+                            </form>
+                        </li>
+                        <li>
+                            <label>
+                                Animation Speed ms
+                                <input 
+                                    type="number" 
+                                    min={this.state.minSortAnimationSpeedMS} 
+                                    max={this.state.maxSortAnimationSpeedMS}
+                                    value={this.state.sortAnimationSpeedMS} 
+                                    onChange={this.handleSortAnimationSpeedMSChange} 
+                                />
+                            </label>
+                        </li>
+                    </ul>
                 </div>
                 
                 <div 
@@ -384,9 +430,10 @@ export default class SortedOut extends React.Component {
                             (value, i) => (
                                     <div 
                                         className="array-bar" 
-                                        key={i}
+                                        key={i + this.state.barFirstPos}
                                         style={{
                                             width: `${value}px`,
+                                            height: `${this.state.barWidth}px`,
                                             backgroundColor: 
                                                 (this.state.isSorted === true ? '#87Deb8' :     // green
                                                 (i === this.state.highlighted.c1 ? '#DC143C':   // red
