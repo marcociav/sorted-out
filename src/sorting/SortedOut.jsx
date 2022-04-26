@@ -1,10 +1,10 @@
 import React from 'react';
-import './SortingVisualizer.css';
+import './SortedOut.css';
 import { sleep, randomIntFromRange, isSorted, Stack} from './utils.js';
 import { bogoSortStep } from './algos/bogosort.js';
 
 
-export default class SortingVisualizer extends React.Component {
+export default class SortedOut extends React.Component {
     constructor(props) {
         super(props);
 

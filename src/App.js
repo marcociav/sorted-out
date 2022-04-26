@@ -1,11 +1,11 @@
 import React from 'react';
-import SortingVisualizer from './sorting/SortingVisualizer';
+import SortedOut from './sorting/SortedOut';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <SortingVisualizer></SortingVisualizer>
+      <SortedOut></SortedOut>
     </div>
   );
 }
