@@ -11,12 +11,16 @@ export default class SortingVisualizer extends React.Component {
         this.state = {
             array: [],
             isSorted: false,
-            highlighted1: null,
-            highlighted2: null,
+            highlighted: {
+                "c1": null,
+                "c2": null,
+                "c3": null,
+                "c4": null
+            },
             isSorting: false,
             arrayLength: 200,
             tmpArrayLength: 200,
-            sortAnimationSpeedMS: 15
+            sortAnimationSpeedMS: 10
         };
         this.sidebarWidth = 300;
         this.background = '#3d3f42';
@@ -36,34 +40,34 @@ export default class SortingVisualizer extends React.Component {
         for (let i = 0; i < this.state.arrayLength; i++) {
             array.push(randomIntFromRange(12, 1320));
         }
-        this.setState(() => {return {
-            array: array, isSorted: false, highlighted1: null, highlighted2: null, isSorting: false
-        }});
+        await this.unHighlightAll();
+        this.setState(() => {return {array: array, isSorted: false, isSorting: false}});
     }
 
     async startSort() {
-        this.setState(() => {return {
-            isSorting: true, isSorted: false, highlighted1: null, highlighted2: null
-        }});
+        await this.unHighlightAll();
+        this.setState(() => {return {isSorting: true, isSorted: false}});
     }
     
     async stopSort() {
-        this.setState(() => {return {
-            isSorting: false, highlighted1: null, highlighted2: null
-        }});
+        await this.unHighlightAll();
+        this.setState(() => {return {isSorting: false}});
     }
 
     async setArray(array) {
         this.setState(() => {return {array: array}});
     }
 
+    async unHighlightAll() {
+        var highlighted = this.state.highlighted;
+        Object.keys(highlighted).forEach((c) => highlighted[c] = null);
+        this.setState(() => {return {highlighted: highlighted}});
+    }
+
     async highlight(key, value) {
-        if (key === 1) {
-            this.setState(() => {return {highlighted1: value}});
-        }
-        else if (key === 2) {
-            this.setState(() => {return {highlighted2: value}});
-        }
+        var highlighted = this.state.highlighted;
+        highlighted[key] = value;
+        this.setState(() => {return {highlighted: highlighted}});
         
     }
 
@@ -104,20 +108,27 @@ export default class SortingVisualizer extends React.Component {
 
                 // Hoare's partition
                 pivot = left;
-                await this.highlight(1, pivot);
-                await this.highlight(2, right);
+                await this.highlight("c1", pivot);
+                await this.highlight("c2", right);
                 i = left;
                 j = right;
                 while (i <= j && this.state.isSorting === true) {
-                    while (array[i] < array[pivot]) {
+
+                    await this.highlight("c3", i);
+                    while (array[i] < array[pivot] && this.state.isSorting === true) {
                         i++;
+                        await this.highlight("c3", i);
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
-                    while (array[j] > array[pivot]) {
+
+                    await this.highlight("c4", j);
+                    while (array[j] > array[pivot] && this.state.isSorting === true) {
                         j--;
+                        await this.highlight("c4", j);
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
-                    if (i <= j) {
+
+                    if (i <= j && this.state.isSorting === true) {
                         // swap
                         tmp = array[i];
                         array[i] = array[j];
@@ -146,7 +157,8 @@ export default class SortingVisualizer extends React.Component {
             if (this.state.isSorting === true) {
                 this.setState(() => {return {isSorted: true}});
             }
-            this.setState(() => {return {isSorting: false, highlighted1: null, highlighted2: null}});
+            await this.unHighlightAll();
+            this.setState(() => {return {isSorting: false}});
         }   
     }
 
@@ -164,12 +176,15 @@ export default class SortingVisualizer extends React.Component {
 
             var array = this.state.array;
 
-            for (curr_size = 1; curr_size <= n - 1; curr_size *= 2) {
-                for (left = 0; left < n - 1; left += 2 * curr_size) {
+            curr_size = 1;
+            while (curr_size <= n - 1 && this.state.isSorting) {
+                left = 0;
+                while (left < n - 1 && this.state.isSorting) {
                     mid = Math.min(left + curr_size - 1, n - 1);
                     right = Math.min(left + 2 * curr_size - 1, n - 1);
-                    await this.highlight(1, left);
-                    await this.highlight(2, right);
+                    await this.highlight("c3", mid);
+                    await this.highlight("c1", left);
+                    await this.highlight("c2", right);
 
                     /* merge */
                     var i, j, k;
@@ -238,14 +253,17 @@ export default class SortingVisualizer extends React.Component {
                     }
                     /* end merge */
                     await sleep(this.state.sortAnimationSpeedMS);
+                    left += 2 * curr_size
                 }
                 await sleep(this.state.sortAnimationSpeedMS);
+                curr_size *= 2;
             }
         }
         if (this.state.isSorting === true) {
             this.setState(() => {return {isSorted: true}});
         }
-        this.setState(() => {return {isSorting: false, highlighted1: null, highlighted2: null}});
+        await this.unHighlightAll();
+        this.setState(() => {return {isSorting: false}});
     }
 
     heapSort() {
@@ -264,9 +282,9 @@ export default class SortingVisualizer extends React.Component {
             var tmp;
             while (i < n && this.state.isSorting === true) {
                 j = 0;
-                await this.highlight(1, j);
+                await this.highlight("c1", j);
                 while (j < n - i - 1 && this.state.isSorting === true) {
-                    await this.highlight(1, j + 1);
+                    await this.highlight("c1", j + 1);
                     if (array[j] > array[j + 1]) {
                         tmp = array[j + 1];
                         array[j + 1] = array[j];
@@ -278,12 +296,13 @@ export default class SortingVisualizer extends React.Component {
                     await sleep(this.state.sortAnimationSpeedMS);
                 }
                 i++;
-                await this.highlight(2, n - i);
+                await this.highlight("c2", n - i);
                 await sleep(this.state.sortAnimationSpeedMS);
             }
             if (this.state.isSorting === true) {
                 this.setState(() => {return {isSorted: true}});
             }
+            await this.unHighlightAll();
             this.setState(() => {return {isSorting: false}});
         }
     }
@@ -295,14 +314,14 @@ export default class SortingVisualizer extends React.Component {
         }
         else {
             var step = bogoSortStep(this.state.array);
-            this.setState(() => {return {array: step.array, isSorted: step.sorted, highlighted1: step.highlighted}});
+            this.setState(() => {return {array: step.array, isSorted: step.sorted}});
+            await this.highlight("c1", step.highlighted);
             await sleep(this.state.sortAnimationSpeedMS);
 
             while (this.state.isSorted === false && this.state.isSorting === true) {
                 step = bogoSortStep(step.array);
-                this.setState(() => {
-                    return {array: step.array, isSorted: step.sorted, highlighted1: step.highlighted}
-                });
+                this.setState(() => {return {array: step.array, isSorted: step.sorted}});
+                await this.highlight("c1", step.highlighted);
                 await sleep(this.state.sortAnimationSpeedMS);
             }
             this.setState(() => {return {isSorting: false}});
@@ -369,9 +388,12 @@ export default class SortingVisualizer extends React.Component {
                                         style={{
                                             width: `${value}px`,
                                             backgroundColor: 
-                                                (this.state.isSorted === true ? '#87Deb8' :  // green
-                                                (i === this.state.highlighted1 ? '#DC143C': // red
-                                                (i === this.state.highlighted2 ? ' #87adde' /* blue */ : 'burlywood')))
+                                                (this.state.isSorted === true ? '#87Deb8' :     // green
+                                                (i === this.state.highlighted.c1 ? '#DC143C':   // red
+                                                (i === this.state.highlighted.c2 ? ' #87adde':  /* blue */ 
+                                                (i === this.state.highlighted.c3 ? '#CF9FFF':   /* light violet */
+                                                (i === this.state.highlighted.c4 ? '#FFFF99':   /* yellow */
+                                                                                                'burlywood')))))
                                         }}
                                     >
                                     </div>
