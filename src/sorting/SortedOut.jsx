@@ -427,15 +427,23 @@ export default class SortedOut extends React.Component {
                         <button onClick={() => this.setRandomArray()}>Reset Array</button>
                         <br></br>
                         <br></br>
-                        <button onClick={() => this.quickSort()}>QuickSort</button>
+                        <button 
+                            onClick={() => this.quickSort()} disabled={this.state.isSorting}
+                        >QuickSort</button>
                         <br></br>
-                        <button onClick={() => this.mergeSort()}>MergeSort</button>
+                        <button 
+                            onClick={() => this.mergeSort()} disabled={this.state.isSorting}
+                        >MergeSort</button>
                         <br></br>
                         <button>HeapSort [TODO]</button>
                         <br></br>
-                        <button onClick={() => this.bubbleSort()}>BubbleSort</button>
+                        <button 
+                            onClick={() => this.bubbleSort()} disabled={this.state.isSorting}
+                        >BubbleSort</button>
                         <br></br>
-                        <button onClick={() => this.bogoSort()}>BogoSort!</button>
+                        <button 
+                            onClick={() => this.bogoSort()} disabled={this.state.isSorting}
+                        >BogoSort!</button>
                         <br></br>
                         <br></br>
                         {stopSortingButton}
