@@ -163,28 +163,32 @@ export default class SortedOut extends React.Component {
 
                 // Hoare's partition
                 pivot = left;
+                await this.isPaused();
                 await this.highlight("c1", pivot);
                 await this.highlight("c2", right);
                 i = left;
                 j = right;
                 while (i <= j && this.state.isSorting === true) {
 
+                    await this.isPaused();
                     await this.highlight("c3", i);
                     while (array[i] < array[pivot] && this.state.isSorting === true) {
                         i++;
-                        await this.highlight("c3", i);
                         await this.isPaused();
+                        await this.highlight("c3", i);
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
 
+                    await this.isPaused();
                     await this.highlight("c4", j);
                     while (array[j] > array[pivot] && this.state.isSorting === true) {
                         j--;
-                        await this.highlight("c4", j);
                         await this.isPaused();
+                        await this.highlight("c4", j);
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
-
+                    
+                    await this.isPaused();
                     if (i <= j && this.state.isSorting === true) {
                         // swap
                         tmp = array[i];
@@ -195,7 +199,6 @@ export default class SortedOut extends React.Component {
                         i++;
                         j--;
                     }
-                    await this.isPaused();
                     await sleep(this.state.sortAnimationSpeedMS);
                 }
 
@@ -241,6 +244,7 @@ export default class SortedOut extends React.Component {
                 while (left < n - 1 && this.state.isSorting) {
                     mid = Math.min(left + curr_size - 1, n - 1);
                     right = Math.min(left + 2 * curr_size - 1, n - 1);
+                    await this.isPaused();
                     await this.highlight("c3", mid);
                     await this.highlight("c1", left);
                     await this.highlight("c2", right);
@@ -291,9 +295,9 @@ export default class SortedOut extends React.Component {
                         else {
                             array[k] = R[j];
                             j++;
-                        }                        
+                        }
+                        await this.isPaused();                        
                         await this.setArray(array);
-                        await this.isPaused();
                         await sleep(this.state.sortAnimationSpeedMS);
                         k++;
                     }
@@ -304,16 +308,16 @@ export default class SortedOut extends React.Component {
                         array[k] = L[i];
                         i++;
                         k++;
-                        await this.setArray(array);
                         await this.isPaused();
+                        await this.setArray(array);
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
                     while (j < n_r && this.state.isSorting) {
                         array[k] = R[j];
                         j++;
                         k++;
-                        await this.setArray(array);
                         await this.isPaused();
+                        await this.setArray(array);
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
                     /* end merge */
@@ -349,14 +353,18 @@ export default class SortedOut extends React.Component {
             var tmp;
             while (i < n && this.state.isSorting === true) {
                 j = 0;
+                await this.isPaused();
                 await this.highlight("c1", j);
                 while (j < n - i - 1 && this.state.isSorting === true) {
+                    await this.isPaused();
                     await this.highlight("c1", j + 1);
                     if (array[j] > array[j + 1]) {
                         tmp = array[j + 1];
                         array[j + 1] = array[j];
+                        await this.isPaused();
                         await this.setArray(array);
                         array[j] = tmp;
+                        await this.isPaused();
                         await this.setArray(array);
                     }
                     j++;
@@ -364,8 +372,8 @@ export default class SortedOut extends React.Component {
                     await sleep(this.state.sortAnimationSpeedMS);
                 }
                 i++;
-                await this.highlight("c2", n - i);
                 await this.isPaused();
+                await this.highlight("c2", n - i);
                 await sleep(this.state.sortAnimationSpeedMS);
             }
             if (this.state.isSorting === true) {
@@ -384,15 +392,15 @@ export default class SortedOut extends React.Component {
         else {
             var step = bogoSortStep(this.state.array);
             this.setState(() => {return {array: step.array, isSorted: step.sorted}});
-            await this.highlight("c1", step.highlighted);
             await this.isPaused();
+            await this.highlight("c1", step.highlighted);
             await sleep(this.state.sortAnimationSpeedMS);
 
             while (this.state.isSorted === false && this.state.isSorting === true) {
                 step = bogoSortStep(step.array);
                 this.setState(() => {return {array: step.array, isSorted: step.sorted}});
-                await this.highlight("c1", step.highlighted);
                 await this.isPaused();
+                await this.highlight("c1", step.highlighted);
                 await sleep(this.state.sortAnimationSpeedMS);
             }
             this.setState(() => {return {isSorting: false}});
