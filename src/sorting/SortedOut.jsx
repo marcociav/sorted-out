@@ -18,14 +18,15 @@ export default class SortedOut extends React.Component {
                 "c4": null
             },
             isSorting: false,
+            isPaused: false,
             arrayLength: 128,
             tmpArrayLength: 128,
             maxArrayLength: 256,
             minArrayLength: 1,
             barWidth: null,
             barFirstPos: null,
-            sortAnimationSpeedMS: 15,
-            minSortAnimationSpeedMS: 15,
+            sortAnimationSpeedMS: 10,
+            minSortAnimationSpeedMS: 10,
             maxSortAnimationSpeedMS: 1000
         };
         this.sidebarWidth = 300;
@@ -36,6 +37,8 @@ export default class SortedOut extends React.Component {
         this.handleArrayLengthChange = this.handleArrayLengthChange.bind(this);
         this.handleArrayLengthSubmit = this.handleArrayLengthSubmit.bind(this);
         this.handleSortAnimationSpeedMSChange = this.handleSortAnimationSpeedMSChange.bind(this);
+        this.pauseSort = this.pauseSort.bind(this);
+        this.playSort = this.playSort.bind(this);
         
     }
 
@@ -59,17 +62,42 @@ export default class SortedOut extends React.Component {
         }
         await this.calculateBarParameters();
         await this.unHighlightAll();
-        this.setState(() => {return {array: array, isSorted: false, isSorting: false}});
+        this.setState(() => {
+            return {
+                array: array, tmpArrayLength: array.length, isSorted: false, isSorting: false, isPaused: false}
+        });
     }
 
     async startSort() {
+        await this.playSort();
         await this.unHighlightAll();
-        this.setState(() => {return {isSorting: true, isSorted: false}});
+        var arrayLength = this.state.arrayLength;
+        this.setState(() => {return {isSorting: true, isSorted: false, tmpArrayLength: arrayLength}});
     }
     
     async stopSort() {
+        await this.playSort();
         await this.unHighlightAll();
         this.setState(() => {return {isSorting: false}});
+    }
+
+    async pauseSort() {
+        this.setState(() => {return {isPaused: true}});
+    }
+
+    async playSort() {
+        this.setState(() => {return {isPaused: false}});
+    }
+
+    async isPaused() {
+        var isPaused = this.state.isPaused;
+        var isSorting = this.state.isSorting;
+        while (isPaused && isSorting) {
+            isPaused = this.state.isPaused;
+            console.log(isPaused);
+            isSorting = this.state.isSorting;
+            await sleep(this.maxSortAnimationSpeedMS * 3);
+        }
     }
 
     async setArray(array) {
@@ -145,6 +173,7 @@ export default class SortedOut extends React.Component {
                     while (array[i] < array[pivot] && this.state.isSorting === true) {
                         i++;
                         await this.highlight("c3", i);
+                        await this.isPaused();
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
 
@@ -152,6 +181,7 @@ export default class SortedOut extends React.Component {
                     while (array[j] > array[pivot] && this.state.isSorting === true) {
                         j--;
                         await this.highlight("c4", j);
+                        await this.isPaused();
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
 
@@ -165,6 +195,7 @@ export default class SortedOut extends React.Component {
                         i++;
                         j--;
                     }
+                    await this.isPaused();
                     await sleep(this.state.sortAnimationSpeedMS);
                 }
 
@@ -179,6 +210,7 @@ export default class SortedOut extends React.Component {
                     stack.push(i);
                     stack.push(right);
                 }
+                await this.isPaused();
                 await sleep(this.state.sortAnimationSpeedMS);
             }
             if (this.state.isSorting === true) {
@@ -228,16 +260,19 @@ export default class SortedOut extends React.Component {
                         R[j] = array[mid + 1 + j];
                         i++;
                         j++;
+                        await this.isPaused();
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
                     while (i < n_l && this.state.isSorting) {
                         L[i] = array[left + i];
                         i++;
+                        await this.isPaused();
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
                     while(j < n_r && this.state.isSorting) {
                         R[j] = array[mid + 1 + j];
                         j++;
+                        await this.isPaused();
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
 
@@ -258,6 +293,7 @@ export default class SortedOut extends React.Component {
                             j++;
                         }                        
                         await this.setArray(array);
+                        await this.isPaused();
                         await sleep(this.state.sortAnimationSpeedMS);
                         k++;
                     }
@@ -269,6 +305,7 @@ export default class SortedOut extends React.Component {
                         i++;
                         k++;
                         await this.setArray(array);
+                        await this.isPaused();
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
                     while (j < n_r && this.state.isSorting) {
@@ -276,12 +313,15 @@ export default class SortedOut extends React.Component {
                         j++;
                         k++;
                         await this.setArray(array);
+                        await this.isPaused();
                         await sleep(this.state.sortAnimationSpeedMS);
                     }
                     /* end merge */
+                    await this.isPaused();
                     await sleep(this.state.sortAnimationSpeedMS);
                     left += 2 * curr_size
                 }
+                await this.isPaused();
                 await sleep(this.state.sortAnimationSpeedMS);
                 curr_size *= 2;
             }
@@ -320,10 +360,12 @@ export default class SortedOut extends React.Component {
                         await this.setArray(array);
                     }
                     j++;
+                    await this.isPaused();
                     await sleep(this.state.sortAnimationSpeedMS);
                 }
                 i++;
                 await this.highlight("c2", n - i);
+                await this.isPaused();
                 await sleep(this.state.sortAnimationSpeedMS);
             }
             if (this.state.isSorting === true) {
@@ -343,12 +385,14 @@ export default class SortedOut extends React.Component {
             var step = bogoSortStep(this.state.array);
             this.setState(() => {return {array: step.array, isSorted: step.sorted}});
             await this.highlight("c1", step.highlighted);
+            await this.isPaused();
             await sleep(this.state.sortAnimationSpeedMS);
 
             while (this.state.isSorted === false && this.state.isSorting === true) {
                 step = bogoSortStep(step.array);
                 this.setState(() => {return {array: step.array, isSorted: step.sorted}});
                 await this.highlight("c1", step.highlighted);
+                await this.isPaused();
                 await sleep(this.state.sortAnimationSpeedMS);
             }
             this.setState(() => {return {isSorting: false}});
@@ -356,10 +400,19 @@ export default class SortedOut extends React.Component {
     }
 
     render() {
-        let stopSortingButton;
+        let stopSortingButton, pauseSortingButton, playSortingButton;
         if (this.state.isSorting) {
-            stopSortingButton = <button onClick={() => this.stopSort()}>Stop Sorting</button>;
+            stopSortingButton = <button onClick={() => this.stopSort()}>Stop Sort</button>;
         }
+
+        if (this.state.isPaused === false && this.state.isSorting) {
+            pauseSortingButton = <button onClick={() => this.pauseSort()}>Pause Sort</button>
+        }
+
+        if (this.state.isPaused && this.state.isSorting) {
+            playSortingButton = <button onClick={() => this.playSort()}>Play Sort</button>
+        }
+        // TODO: deactivate *all* Sort Buttons once *one* has been *clicked*
         return (
             <div className="container">
                 
@@ -386,6 +439,8 @@ export default class SortedOut extends React.Component {
                         <br></br>
                         <br></br>
                         {stopSortingButton}
+                        {pauseSortingButton}
+                        {playSortingButton}
                     </ul>
                 </div>
 
@@ -402,8 +457,15 @@ export default class SortedOut extends React.Component {
                                         value={this.state.tmpArrayLength} 
                                         onChange={this.handleArrayLengthChange} 
                                     />
+                                    <input 
+                                        type="range" 
+                                        min={this.state.minArrayLength} 
+                                        max={this.state.maxArrayLength}
+                                        value={this.state.tmpArrayLength} 
+                                        onChange={this.handleArrayLengthChange} 
+                                    />
                                 </label>
-                                <input type="submit" value="Submit" />
+                                <input type="submit" value="Set Array" />
                             </form>
                         </li>
                         <li>
@@ -411,6 +473,13 @@ export default class SortedOut extends React.Component {
                                 Animation Speed ms
                                 <input 
                                     type="number" 
+                                    min={this.state.minSortAnimationSpeedMS} 
+                                    max={this.state.maxSortAnimationSpeedMS}
+                                    value={this.state.sortAnimationSpeedMS} 
+                                    onChange={this.handleSortAnimationSpeedMSChange} 
+                                />
+                                <input 
+                                    type="range" 
                                     min={this.state.minSortAnimationSpeedMS} 
                                     max={this.state.maxSortAnimationSpeedMS}
                                     value={this.state.sortAnimationSpeedMS} 
