@@ -30,6 +30,7 @@ export default class SortedOut extends React.Component {
             maxSortAnimationSpeedMS: 1000
         };
         this.sidebarWidth = 300;
+        this.topbarHeight = 110;
         this.background = '#3d3f42';
         this.font = 'poppins';
         this.color = 'aliceblue';
@@ -337,7 +338,114 @@ export default class SortedOut extends React.Component {
         this.setState(() => {return {isSorting: false}});
     }
 
-    heapSort() {
+    async heapSort() {
+        await this.startSort();
+        var n = this.state.array.length;
+        if (n <= 1) {
+            this.setState(() => {return {isSorted: true, isSorting: false}});
+        }
+        else {
+            var array = this.state.array;
+            var i, j, k;
+            var tmp;
+            /* build maxHeap */
+            i = 1;
+            while (i < n && this.state.isSorting) {
+                await this.highlight("c2", i);
+
+                // if child is bigger than parent
+                if (array[i] > array[Math.floor((i - 1) / 2)]) {
+                    await this.highlight("c3", Math.floor((i - 1) / 2));
+                    j = i;
+
+                    // swap parent and child until parent is smaller
+                    while (array[j] > array[Math.floor((j - 1) / 2)] && this.state.isSorting) {
+                        await this.highlight("c3", j);
+                        await this.highlight("c4", Math.floor((j - 1) / 2));
+                        tmp = array[j];
+                        array[j] = array[Math.floor((j - 1) / 2)];
+                        await this.isPaused();
+                        await this.setArray(array);
+                        array[Math.floor((j - 1) / 2)] = tmp;
+                        await this.isPaused();
+                        await this.setArray(array);
+                        
+                        await this.isPaused();
+                        await sleep(this.state.sortAnimationSpeedMS);
+                        // this is what ensures n log(n) instead of n^2
+                        // log(n) time, ~halving j every time
+                        j = Math.floor((j - 1) / 2);
+                    }
+                }
+
+                await this.isPaused();
+                await sleep(this.state.sortAnimationSpeedMS);
+                // n time, iterating over every element
+                i++;
+            }
+            /* end build maxHeap */
+
+            /* sort elements using maxHeap */
+            i = n - 1;
+            while (i > 0 && this.state.isSorting) {
+                await this.highlight("c1", i);
+                await this.highlight("c2", 0);
+
+                // swap first and current last index i
+                tmp = array[0];
+                array[0] = array[i];
+                await this.isPaused();
+                await this.setArray(array);
+                array[i] = tmp;
+                await this.isPaused();
+                await this.setArray(array);
+                
+                // must maintain heap invariance after each swap
+                j = 0;
+                do {
+                    await this.highlight("c3", j);
+
+                    k = Math.floor(2 * j + 1);
+                    await this.highlight("c4", k);
+
+                    // if left child is smaller than right child 
+                    // point index variable to right child
+                    if (array[k] < array[k + 1] && k < i - 1) {
+                        k++;
+                    }
+
+                    // if parent is smaller than child 
+                    // swap parent with biggest child (selected in previous if)
+                    if (array[j] < array[k] && k < i) {
+                        tmp = array[j];
+                        await this.isPaused();
+                        await this.setArray(array);
+                        array[j] = array[k];
+                        await this.isPaused();
+                        await this.setArray(array);
+                        array[k] = tmp;
+                    }
+
+                    await this.isPaused();
+                    await sleep(this.state.sortAnimationSpeedMS);
+                    // this is what ensures n log(n) instead of n^2
+                    // log(n) time, ~halving j every time
+                    j = k;
+                } while (k < i && this.state.isSorting);
+
+                await this.isPaused();
+                await sleep(this.state.sortAnimationSpeedMS);
+                // n time
+                i--;
+            }
+            /* end sort elements using maxHeap */
+
+        }
+        if (this.state.isSorting === true) {
+            this.setState(() => {return {isSorted: true}});
+        }
+        await this.unHighlightAll();
+        this.setState(() => {return {isSorting: false}});
 
     }
 
@@ -408,6 +516,9 @@ export default class SortedOut extends React.Component {
     }
 
     render() {
+        let maxSidebarHeight = this.state.barFirstPos + this.topbarHeight + 10;
+        maxSidebarHeight += this.state.arrayLength * (this.state.barWidth + 1);
+
         let stopSortingButton, pauseSortingButton, playSortingButton;
         if (this.state.isSorting) {
             stopSortingButton = <button onClick={() => this.stopSort()}>Stop Sort</button>;
@@ -426,13 +537,17 @@ export default class SortedOut extends React.Component {
                 
                 <div 
                     className="sidebar-container" 
-                    style={{width: `${this.sidebarWidth}px`}}
+                    style={{
+                        width: `${this.sidebarWidth}px`, 
+                        height: `max(100vh, ${maxSidebarHeight}px)`
+                    }}
                 >
                     <ul className="sidebar">
                         <h1>Sorted Out</h1>
                         <p>A Sorting Visualizer</p>
                         <br></br>
                         <button onClick={() => this.setRandomArray()}>Reset Array</button>
+                        <br></br>
                         <br></br>
                         <br></br>
                         <button 
@@ -443,15 +558,19 @@ export default class SortedOut extends React.Component {
                             onClick={() => this.mergeSort()} disabled={this.state.isSorting}
                         >MergeSort</button>
                         <br></br>
-                        <button>HeapSort [TODO]</button>
+                        <button onClick={() => this.heapSort()} disabled={this.state.isSorting}
+                        >HeapSort</button>
+                        <br></br>
                         <br></br>
                         <button 
                             onClick={() => this.bubbleSort()} disabled={this.state.isSorting}
                         >BubbleSort</button>
                         <br></br>
+                        <br></br>
                         <button 
                             onClick={() => this.bogoSort()} disabled={this.state.isSorting}
                         >BogoSort!</button>
+                        <br></br>
                         <br></br>
                         <br></br>
                         {stopSortingButton}
@@ -460,7 +579,12 @@ export default class SortedOut extends React.Component {
                     </ul>
                 </div>
 
-                <div className="topbar-container">
+                <div 
+                    className="topbar-container" 
+                    style={{
+                        height: `${this.topbarHeight}px`
+                    }}
+                >
                     <ul>
                         <li>
                             <form onSubmit={this.handleArrayLengthSubmit}>
