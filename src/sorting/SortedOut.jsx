@@ -1,7 +1,6 @@
 import React from 'react';
 import './SortedOut.css';
-import { sleep, randomIntFromRange, isSorted, Stack } from './utils.js';
-import { bogoSortStep } from './algos/bogosort.js';
+import { sleep, randomIntFromRange, isSorted, shuffle, Stack } from './utils.js';
 
 
 export default class SortedOut extends React.Component {
@@ -489,17 +488,15 @@ export default class SortedOut extends React.Component {
             this.setState(() => {return {isSorted: true, isSorting: false}});
         }
         else {
-            var step = bogoSortStep(this.state.array);
-            this.setState(() => {return {array: step.array, isSorted: step.sorted}});
-            await this.isPaused();
-            await this.highlight("c1", step.highlighted);
-            await sleep(this.state.sortAnimationSpeedMS);
-
+            var sorted, highlighted;
+            var array = this.state.array;
             while (this.state.isSorted === false && this.state.isSorting === true) {
-                step = bogoSortStep(step.array);
-                this.setState(() => {return {array: step.array, isSorted: step.sorted}});
+                array = shuffle(array);
+                sorted = isSorted(array);
+                highlighted = Math.floor(Math.random() * array.length)
+                this.setState(() => {return {array: array, isSorted: sorted}});
                 await this.isPaused();
-                await this.highlight("c1", step.highlighted);
+                await this.highlight("c1", highlighted);
                 await sleep(this.state.sortAnimationSpeedMS);
             }
             await this.endSortCheck();

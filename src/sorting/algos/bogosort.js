@@ -4,7 +4,7 @@ import { shuffle, isSorted } from '../utils.js'
 export function bogoSortStep(array) {
     array = shuffle(array);
     let sorted = isSorted(array);
-    let highlighted = Math.floor(Math.random() * array.length)
+    let highlighted = Math.floor(Math.random() * array.length);
 
     return {
         'array': array,
