@@ -90,6 +90,8 @@ export default class SortedOut extends React.Component {
         this.setState(() => {return {isPaused: false}});
     }
 
+    // TODO: endsort check look for **end sort check** for code
+
     async isPaused() {
         var isPaused = this.state.isPaused;
         var isSorting = this.state.isSorting;
@@ -217,6 +219,7 @@ export default class SortedOut extends React.Component {
                 await this.isPaused();
                 await sleep(this.state.sortAnimationSpeedMS);
             }
+            // **end sort check**
             if (this.state.isSorting === true) {
                 this.setState(() => {return {isSorted: true}});
             }
@@ -349,6 +352,7 @@ export default class SortedOut extends React.Component {
             var i, j, k;
             var tmp;
             /* build maxHeap */
+            this.highlight("c1", 0);
             i = 1;
             while (i < n && this.state.isSorting) {
                 await this.highlight("c2", i);
@@ -531,7 +535,6 @@ export default class SortedOut extends React.Component {
         if (this.state.isPaused && this.state.isSorting) {
             playSortingButton = <button onClick={() => this.playSort()}>Play Sort</button>
         }
-        // TODO: deactivate *all* Sort Buttons once *one* has been *clicked*
         return (
             <div className="container">
                 
