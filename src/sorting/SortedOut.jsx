@@ -90,7 +90,13 @@ export default class SortedOut extends React.Component {
         this.setState(() => {return {isPaused: false}});
     }
 
-    // TODO: endsort check look for **end sort check** for code
+    async endSortCheck() {
+        if (this.state.isSorting === true) {
+            this.setState(() => {return {isSorted: true}});
+        }
+        await this.unHighlightAll();
+        this.setState(() => {return {isSorting: false}});
+    }
 
     async isPaused() {
         var isPaused = this.state.isPaused;
@@ -219,12 +225,7 @@ export default class SortedOut extends React.Component {
                 await this.isPaused();
                 await sleep(this.state.sortAnimationSpeedMS);
             }
-            // **end sort check**
-            if (this.state.isSorting === true) {
-                this.setState(() => {return {isSorted: true}});
-            }
-            await this.unHighlightAll();
-            this.setState(() => {return {isSorting: false}});
+            await this.endSortCheck();
         }   
     }
 
@@ -334,11 +335,7 @@ export default class SortedOut extends React.Component {
                 curr_size *= 2;
             }
         }
-        if (this.state.isSorting === true) {
-            this.setState(() => {return {isSorted: true}});
-        }
-        await this.unHighlightAll();
-        this.setState(() => {return {isSorting: false}});
+        await this.endSortCheck();
     }
 
     async heapSort() {
@@ -443,14 +440,8 @@ export default class SortedOut extends React.Component {
                 i--;
             }
             /* end sort elements using maxHeap */
-
         }
-        if (this.state.isSorting === true) {
-            this.setState(() => {return {isSorted: true}});
-        }
-        await this.unHighlightAll();
-        this.setState(() => {return {isSorting: false}});
-
+        await this.endSortCheck();
     }
 
     async bubbleSort() {
@@ -488,11 +479,7 @@ export default class SortedOut extends React.Component {
                 await this.highlight("c2", n - i);
                 await sleep(this.state.sortAnimationSpeedMS);
             }
-            if (this.state.isSorting === true) {
-                this.setState(() => {return {isSorted: true}});
-            }
-            await this.unHighlightAll();
-            this.setState(() => {return {isSorting: false}});
+            await this.endSortCheck();
         }
     }
 
@@ -515,7 +502,7 @@ export default class SortedOut extends React.Component {
                 await this.highlight("c1", step.highlighted);
                 await sleep(this.state.sortAnimationSpeedMS);
             }
-            this.setState(() => {return {isSorting: false}});
+            await this.endSortCheck();
         }
     }
 
