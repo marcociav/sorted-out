@@ -531,7 +531,7 @@ export default class SortedOut extends React.Component {
                 >
                     <ul className="sidebar">
                         <img 
-                            src={require("../media/sorted-out.png")}
+                            src={require("../media/sorted-out-medium.png")}
                             width={150}
                             height={150}
                         />
