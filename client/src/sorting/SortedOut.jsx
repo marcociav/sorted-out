@@ -530,6 +530,11 @@ export default class SortedOut extends React.Component {
                     }}
                 >
                     <ul className="sidebar">
+                        <img 
+                            src={require("../media/sorted-out.png")}
+                            width={150}
+                            height={150}
+                        />
                         <h1>Sorted Out</h1>
                         <p>A Sorting Visualizer</p>
                         <br></br>
