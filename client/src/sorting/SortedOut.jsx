@@ -102,7 +102,6 @@ export default class SortedOut extends React.Component {
         var isSorting = this.state.isSorting;
         while (isPaused && isSorting) {
             isPaused = this.state.isPaused;
-            console.log(isPaused);
             isSorting = this.state.isSorting;
             await sleep(this.maxSortAnimationSpeedMS * 3);
         }
